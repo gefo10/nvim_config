@@ -28,9 +28,14 @@ saga.setup({
 })
 
 -- Key binding for peek definition (you can change <leader>pd to any key you prefer)
-vim.keymap.set('n', '<leader>pd', '<cmd>Lspsaga peek_definition<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>spd', '<cmd>Lspsaga peek_definition<CR>', { noremap = true, silent = true })
 
 -- Optional: Add other useful LSPSaga bindings like hover docs, show signature, etc.
-vim.keymap.set('n', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>rn', '<cmd>Lspsaga rename<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>sca', '<cmd>Lspsaga code_action<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>srn', '<cmd>Lspsaga rename<CR>', { noremap = true, silent = true })
+
+vim.keymap.set({'n','t'}, '<leader>TT', '<cmd>Lspsaga term_toggle<CR>')
+vim.keymap.set('n', '<leader>SK', '<cmd>Lspsaga hover_doc<CR>')
+
+
 
