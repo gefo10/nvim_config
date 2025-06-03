@@ -6,4 +6,10 @@ function ColorMyPencils(color)
 	vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
 end
 
-ColorMyPencils()
+function FoxColor(fox)
+    fox = fox or "carbonfox"
+    vim.cmd.colorscheme(fox)
+end
+
+--ColorMyPencils()
+FoxColor()
