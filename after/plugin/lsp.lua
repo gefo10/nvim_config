@@ -1,15 +1,54 @@
 local lsp = require("lsp-zero")
 require('mason').setup({})
-require('mason-lspconfig').setup({
-    -- Replace the language servers listed here
-    -- with the ones you want to install
-    ensure_installed = { 'rust_analyzer', 'pyright', 'jdtls', 'eslint', 'clangd' },
-    --    handlers = {
-    --        function(server_name)
-    --            require('lspconfig')[server_name].setup({})
-    --        end,
-    --    }
+
+
+local home = os.getenv("HOME")
+local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
+local lombok_jar = jdtls_pkg .. '/lombok.jar'
+local lombok_path_new = home .. "/.local/share/lombok/lombok.jar"
+
+require("mason-lspconfig").setup({
+  ensure_installed = {
+    --"ts_ls", 
+    "pyright",
+    "rust_analyzer",
+    "clangd",
+    "eslint",
+    "jdtls",
+  },
+  automatic_installation = true,  -- optional: auto-install missing LSPs
 })
+
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "java",
+  callback = function()
+    local jdtls = require('jdtls')
+
+    local config = {
+      cmd = {
+        'java',
+        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        '-Dosgi.bundles.defaultStartLevel=4',
+        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+        '-Dlog.level=ALL',
+        '-noverify',
+        '-Xmx1G',
+        '-javaagent:' .. lombok_path_new,
+        '-jar', vim.fn.glob(jdtls_pkg .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
+        '-configuration', jdtls_pkg .. '/config_mac',
+        '-data', vim.fn.stdpath('cache') .. '/jdtls-workspace' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
+      },
+      root_dir = require('jdtls.setup').find_root({'.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}),
+      settings = {
+        java = {},
+      },
+    }
+
+    jdtls.start_or_attach(config)
+  end
+})
+
 -- lsp.preset("recommended")
 
 --lsp.ensure_installed({
@@ -76,8 +115,8 @@ cmp.setup({
     mapping = cmp.mapping.preset.insert({
         ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
         ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-        ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-        ["<C-Space>"] = cmp.mapping.complete(),
+        ['<C-Space>'] = cmp.mapping.confirm({ select = true }),
+        ["<C-c>"] = cmp.mapping.complete(),
     }),
     snippet = {
         expand = function(args)
@@ -154,57 +193,55 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 local lsp_configurations = require('lspconfig.configs')
 
-local home = os.getenv 'HOME'
 local workspace_path = home .. '/.local/share/nvim/jdtls-workspace/'
 local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
 local workspace_dir = workspace_path .. project_name
-require('lspconfig').jdtls.setup({
-    cmd = {
-        'java',
-        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-        '-Dosgi.bundles.defaultStartLevel=4',
-        '-Declipse.product=org.eclipse.jdt.ls.core.product',
-        '-Dlog.protocol=true',
-        '-Dlog.level=ALL',
-        '-Xmx1g',
-        '--add-modules=ALL-SYSTEM',
-        '--add-opens',
-        'java.base/java.util=ALL-UNNAMED',
-        '--add-opens',
-        'java.base/java.lang=ALL-UNNAMED',
-        '-javaagent:' .. home .. '/.local/share/nvim/mason/packages/jdtls/lombok.jar',
-        '-jar',
-        vim.fn.glob(home .. '/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
-        '-configuration',
-        home .. '/.local/share/nvim/mason/packages/jdtls/config_mac_arm',
-        '-data',
-        workspace_dir,
-    },
-    filetypes = { 'java' },
-    root_dir = vim.fs.dirname(vim.fs.find({ 'gradlew', '.git', 'mvnw', 'build.gradle', 'pom.xml' }, { upward = true })
-        [1]), --require('lspconfig.util').root_pattern({ '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' }),
-    settings = {
-        java = {
-            server = {
-                semanticHighlighting = {
-                    enabled = false,
-                }
-            }
-        }
-    },
-})
-
-require('lspconfig').pyright.setup({
-    settings = {
-        python = {
-            analysis = {
-                typeCheckingMode = 'on',
-            }
-        }
-    }
-})
-
+--require('lspconfig').jdtls.setup({
+--    cmd = {
+--        'java',
+--        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+--        '-Dosgi.bundles.defaultStartLevel=4',
+--        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+--        '-Dlog.protocol=true',
+--        '-Dlog.level=ALL',
+--        '-Xmx1g',
+--        '--add-modules=ALL-SYSTEM',
+--        '--add-opens',
+--        'java.base/java.util=ALL-UNNAMED',
+--        '--add-opens',
+--        'java.base/java.lang=ALL-UNNAMED',
+--        '-javaagent:' .. home .. '/.local/share/nvim/mason/packages/jdtls/lombok.jar',
+--        '-jar',
+--        vim.fn.glob(home .. '/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
+--        '-configuration',
+--        home .. '/.local/share/nvim/mason/packages/jdtls/config_mac_arm',
+--        '-data',
+--        workspace_dir,
+--    },
+--    filetypes = { 'java' },
+--    root_dir = vim.fs.dirname(vim.fs.find({ 'gradlew', '.git', 'mvnw', 'build.gradle', 'pom.xml' }, { upward = true })
+--        [1]), --require('lspconfig.util').root_pattern({ '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' }),
+--    settings = {
+--        java = {
+--            server = {
+--                semanticHighlighting = {
+--                    enabled = false,
+--                }
+--            }
+--        }
+--    },
+--})
 --
+--require('lspconfig').pyright.setup({
+--    settings = {
+--        python = {
+--            analysis = {
+--                typeCheckingMode = 'on',
+--            }
+--        }
+--    }
+--})
+
 --local config_dir = jdtls_dir .. '/config_mac_arm'
 --local plugins_dir = jdtls_dir .. '/plugins'
 ---- local path_to_jar = plugins_dir .. '/org.eclipse.equinox.launcher_*.jar'
@@ -288,7 +325,7 @@ require('lspconfig').pyright.setup({
 
 -- Set up all other LSPs with lsp-zero
 lsp.setup()
-
+--require("lspconfig").tsserver.setup({})
 vim.diagnostic.config({
     virtual_text = true,
 })

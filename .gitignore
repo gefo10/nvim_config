@@ -1,0 +1,36 @@
+# Ignore swap files
+*.swp
+*.swo
+
+# Ignore backup files
+*.bak
+*~
+
+# Ignore undo files
+*.un~
+
+# Ignore netrw history
+.netrwhist
+
+# Ignore session info
+Session.vim
+
+# Ignore tags
+tags
+
+# Ignore ctags
+.ctags
+
+# Ignore compiled Lua files
+*.luac
+
+# Ignore Packer plugin installation directory
+site/pack/packer/start/*
+site/pack/packer/opt/*
+
+# Keep your own plugins or configuration
+!site/pack/packer/start/packer.nvim
+
+# Ignore Packer compiled file (if you use `compile_path`)
+plugin/packer_compiled.lua
+

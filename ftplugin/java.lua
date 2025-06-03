@@ -1,4 +1,3 @@
-
 --jdtls = require('jdtls')
 -- Enable LSP debugging logs
 --vim.lsp.set_log_level("debug")
@@ -23,7 +22,7 @@
 --local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
 --local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
 --
-----local lombok_jar = vim.fn.stdpath('config') ..  '/plugins/jdtls/lombok.jar' 
+----local lombok_jar = vim.fn.stdpath('config') ..  '/plugins/jdtls/lombok.jar'
 --
 ----print(vim.fn.glob(plugins_dir .. '/org.eclipse.equinox.launcher_*.jar'))
 ----print(config_dir)
@@ -46,7 +45,7 @@
 --     '-data', workspace_dir, -- home .. '/jdtls_workspace',  -- Directory for project data
 --    '--add-modules=ALL-SYSTEM',
 --    '--add-opens', 'java.base/java.util=ALL-UNNAMED',
---    '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+--/    '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
 --  }
 --local config = {
 --     -- cmd = {vim.fn.expand('~/.local/share/nvim/mason/bin/jdtls')},
@@ -98,4 +97,4 @@
 ----})
 ----
 ----jdtls.start_or_attach(config)
---  
+--
