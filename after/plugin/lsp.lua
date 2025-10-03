@@ -1,29 +1,33 @@
 local lsp = require("lsp-zero")
+
+-- Prevent mason-lspconfig and lspconfig from auto-setup
+local lspconfig = require('lspconfig')
+
+local configs = require('lspconfig.configs')
+
 require('mason').setup({})
-
-
 local home = os.getenv("HOME")
 local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
 local lombok_jar = jdtls_pkg .. '/lombok.jar'
 local lombok_path_new = home .. "/.local/share/lombok/lombok.jar"
 
-require("mason-lspconfig").setup({
-  ensure_installed = {
-    --"ts_ls", 
-    "pyright",
-    "rust_analyzer",
-    "clangd",
-    "eslint",
-    "jdtls",
-  },
-  automatic_installation = true,  -- optional: auto-install missing LSPs
-})
-
-
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "java",
   callback = function()
     local jdtls = require('jdtls')
+
+    local root_markers = { 'pom.xml', 'build.gradle', 'mvnw', 'gradlew', '.project' }
+    local root_dir = require('lspconfig.util').root_pattern(unpack(root_markers))(vim.fn.expand('%:p'))
+
+    if not root_dir then
+        print("[jdtls] No Java project root found. Skipping jdtls.")
+        return  -- abort if no valid Java project root is found
+    end
+    local home = os.getenv("HOME")
+    local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
+    local lombok_path = home .. "/.local/share/lombok/lombok.jar"
+    local workspace_dir = vim.fn.stdpath('cache') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+
 
     local config = {
       cmd = {
@@ -39,25 +43,33 @@ vim.api.nvim_create_autocmd("FileType", {
         '-configuration', jdtls_pkg .. '/config_mac',
         '-data', vim.fn.stdpath('cache') .. '/jdtls-workspace' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
       },
-      root_dir = require('jdtls.setup').find_root({'.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}),
+      --root_dir = require('jdtls.setup').find_root({'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}) or jdtls.find_root({'.git'}),
+      --root_dir = util.root_pattern('mvnw', 'gradlew', 'pom.xml', 'build.gradle') or util.root_pattern('.git'), 
+      root_dir = root_dir,
       settings = {
         java = {},
       },
     }
 
+    print('[JDTLS] Attaching with root:', root_dir)
+
     jdtls.start_or_attach(config)
+    -- ✅ Format on save just for Java
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = vim.api.nvim_get_current_buf(),
+      callback = function()
+        vim.lsp.buf.format({ async = false, timeout_ms = 5000 })
+      end,
+    })
   end
 })
-
--- lsp.preset("recommended")
-
---lsp.ensure_installed({
---  'rust_analyzer',
---  'pyright',
---  --'jdtls', ---> maybe causing conflicts lsp-zero vs nvim-jdtls
---  'eslint',
---  'clangd',
---})
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    print("[LSP ATTACH]", client.name, "on buffer", args.buf)
+  end
+})
+--
 -- Reserve a space in the gutter
 -- This will avoid an annoying layout shift in the screen
 vim.opt.signcolumn = 'yes'
@@ -171,7 +183,7 @@ lsp.format_on_save({
         ['biome'] = { 'javascript', 'typescript' },
         ['rust_analyzer'] = { 'rust' },
         ['pyright'] = { 'python' },
-        ['jdtls'] = { 'java' },
+        --['jdtls'] = { 'java' },
         ['clangd'] = { 'c', 'cpp' },
     }
 })
@@ -196,143 +208,20 @@ local lsp_configurations = require('lspconfig.configs')
 local workspace_path = home .. '/.local/share/nvim/jdtls-workspace/'
 local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
 local workspace_dir = workspace_path .. project_name
---require('lspconfig').jdtls.setup({
---    cmd = {
---        'java',
---        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
---        '-Dosgi.bundles.defaultStartLevel=4',
---        '-Declipse.product=org.eclipse.jdt.ls.core.product',
---        '-Dlog.protocol=true',
---        '-Dlog.level=ALL',
---        '-Xmx1g',
---        '--add-modules=ALL-SYSTEM',
---        '--add-opens',
---        'java.base/java.util=ALL-UNNAMED',
---        '--add-opens',
---        'java.base/java.lang=ALL-UNNAMED',
---        '-javaagent:' .. home .. '/.local/share/nvim/mason/packages/jdtls/lombok.jar',
---        '-jar',
---        vim.fn.glob(home .. '/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
---        '-configuration',
---        home .. '/.local/share/nvim/mason/packages/jdtls/config_mac_arm',
---        '-data',
---        workspace_dir,
---    },
---    filetypes = { 'java' },
---    root_dir = vim.fs.dirname(vim.fs.find({ 'gradlew', '.git', 'mvnw', 'build.gradle', 'pom.xml' }, { upward = true })
---        [1]), --require('lspconfig.util').root_pattern({ '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' }),
---    settings = {
---        java = {
---            server = {
---                semanticHighlighting = {
---                    enabled = false,
---                }
---            }
---        }
---    },
---})
---
---require('lspconfig').pyright.setup({
---    settings = {
---        python = {
---            analysis = {
---                typeCheckingMode = 'on',
---            }
---        }
---    }
---})
-
---local config_dir = jdtls_dir .. '/config_mac_arm'
---local plugins_dir = jdtls_dir .. '/plugins'
----- local path_to_jar = plugins_dir .. '/org.eclipse.equinox.launcher_*.jar'
---
---local path_to_plugins = jdtls_dir .. "/plugins/"
-----local path_to_lsp_server = jdtls_dir .. "/config_mac"
---
---local lombok_path = jdtls_dir .. "/lombok.jar"
---
---local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
---local workspace_dir = home .. "/.cache/jdtls/workspace"
-
---local home = vim.fn.expand('$HOME')
---local lombok_path = jdtls_dir .. '/lombok.jar'
---local plugins_dir = jdtls_dir .. '/plugins'
---local config_dir = jdtls_dir .. '/plugins/jdtls/config_mac'
----- Custom setup for JDTLS
---local jdtls_config = {
---  cmd = {
---    -- Path to JDTLS binary provided by Mason
---    vim.fn.stdpath("data") .. "/mason/bin/jdtls",
---    --home .. "/.local/share/nvim/mason/bin/jdtls",  -- Path to the jdtls binary installed via Mason
---   '-Declipse.application=org.eclipse.jdt.ls.core.id1',
---   '-Dosgi.bundles.defaultStartLevel=4',
---   '-Declipse.product=org.eclipse.jdt.ls.core.product',
---   '-Dlog.protocol=true',
---   '-Dlog.level=ALL',
---    '-javaagent:' .. lombok_path,
---    '-Xbootclasspath/a:' .. lombok_path,
---   '-Xmx1g',
---   '--add-modules=ALL-SYSTEM',
---   '--add-opens', 'java.base/java.util=ALL-UNNAMED',
---   '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
---   '-jar', vim.fn.glob(plugins_dir .. '/org.eclipse.equinox.launcher_*.jar'), --home .. '/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar',  -- Use the correct path to the launcher JAR
---   '-configuration', config_dir, -- home .. '/.local/share/nvim/mason/packages/jdtls/config_linux',  -- Path to the JDTLS configuration folder for your OS
---   '-data', workspace_dir, -- home .. '/jdtls_workspace',  -- Directory for project data
---    -- Additional JDTLS arguments
-----    "-data", vim.fn.stdpath("cache") .. "/jdtls_workspace/" .. vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t"),
---  },
---  root_dir = require('lspconfig.util').root_pattern('.git', 'pom.xml', 'gradlew'),
---  settings = {
---    java = {
---      eclipse = {
---        downloadSources = true
---      },
---      configuration = {
---        updateBuildConfiguration = "interactive"
---      },
---      maven = {
---        downloadSources = true
---      },
---      implementationsCodeLens = {
---        enabled = true
---      },
---      referencesCodeLens = {
---        enabled = true
---      },
---      references = {
---        includeDecompiledSources = true
---      },
---      format = {
---        enabled = true,
---        settings = {
---          url = vim.fn.stdpath("config") .. "/eclipse-java-google-style.xml",
---          profile = "GoogleStyle"
---        }
---      }
---    }
---  },
---  init_options = {
---    bundles = {}
---  },
---  on_attach = function(client, bufnr)
---    -- Attach the general on_attach configuration
---    lsp.on_attach(client, bufnr)
---  end,
---}
---
----- Attach JDTLS using the custom configuration
---require('lspconfig').jdtls.setup(jdtls_config)
-
 -- Set up all other LSPs with lsp-zero
-lsp.setup()
+lsp.setup({ 
+    servers = {
+    -- Prevent lsp-zero from starting jdtls
+    -- Your manual setup will handle it
+    jdtls = false
+  }
+})
 --require("lspconfig").tsserver.setup({})
 vim.diagnostic.config({
     virtual_text = true,
 })
 
+--vim.api.nvim_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
+vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagnostic in float" })
 
---
---lspconfig.jdtls.setup({
---  cmd = { vim.fn.expand('~/.local/share/nvim/mason/bin/jdtls') },  -- Correct path to jdtls
---  root_dir = lspconfig.util.root_pattern('.git', 'gradlew', 'pom.xml', 'build.gradle'),
---})
+
