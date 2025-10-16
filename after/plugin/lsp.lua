@@ -11,23 +11,85 @@ local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
 local lombok_jar = jdtls_pkg .. '/lombok.jar'
 local lombok_path_new = home .. "/.local/share/lombok/lombok.jar"
 
+--vim.api.nvim_create_autocmd("FileType", {
+--  pattern = "java",
+--  callback = function()
+--    local jdtls = require('jdtls')
+--
+--    local root_markers = { 'pom.xml', 'build.gradle', 'mvnw', 'gradlew' }
+--    local root_dir = require('lspconfig.util').root_pattern(unpack(root_markers))(vim.fn.expand('%:p'))
+--
+--    if not root_dir then
+--        print("[jdtls] No Java project root found. Skipping jdtls.")
+--        return  -- abort if no valid Java project root is found
+--    end
+--    local home = os.getenv("HOME")
+--    local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
+--    local lombok_path = home .. "/.local/share/lombok/lombok.jar"
+--    local workspace_dir = vim.fn.stdpath('cache') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+--
+--
+--    local config = {
+--      cmd = {
+--        'java',
+--        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+--        '-Dosgi.bundles.defaultStartLevel=4',
+--        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+--        '-Dlog.level=ALL',
+--        '-noverify',
+--        '-Xmx1G',
+--        '-Xmx2G',
+--        '-javaagent:' .. lombok_path_new,
+--        '-jar', vim.fn.glob(jdtls_pkg .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
+--        '-configuration', jdtls_pkg .. '/config_mac',
+--        '-data', vim.fn.stdpath('cache') .. '/jdtls-workspace' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
+--      },
+--      --root_dir = require('jdtls.setup').find_root({'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}) or jdtls.find_root({'.git'}),
+--      --root_dir = util.root_pattern('mvnw', 'gradlew', 'pom.xml', 'build.gradle') or util.root_pattern('.git'), 
+--      root_dir = root_dir,
+--      settings = {
+--        java = {},
+--      },
+--    }
+--
+--    print('[JDTLS] Attaching with root:', root_dir)
+--
+--    jdtls.start_or_attach(config)
+--    -- ✅ Format on save just for Java
+--    vim.api.nvim_create_autocmd("BufWritePre", {
+--      buffer = vim.api.nvim_get_current_buf(),
+--      callback = function()
+--        vim.lsp.buf.format({ async = false, timeout_ms = 5000 })
+--      end,
+--    })
+--  end
+--})
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "java",
   callback = function()
     local jdtls = require('jdtls')
 
-    local root_markers = { 'pom.xml', 'build.gradle', 'mvnw', 'gradlew', '.project' }
-    local root_dir = require('lspconfig.util').root_pattern(unpack(root_markers))(vim.fn.expand('%:p'))
+    -- Find the root of the Java project (e.g., where build.gradle is)
+    local java_root_markers = { 'pom.xml', 'build.gradle', 'mvnw', 'gradlew' }
+    local java_project_dir = require('lspconfig.util').root_pattern(unpack(java_root_markers))(vim.fn.expand('%:p'))
 
-    if not root_dir then
-        print("[jdtls] No Java project root found. Skipping jdtls.")
-        return  -- abort if no valid Java project root is found
+    if not java_project_dir then
+      print("[jdtls] No Java project root found. Skipping jdtls.")
+      return -- Abort if no valid Java project root is found
     end
+
+    -- IMPORTANT: Now find the REAL project root (where .git is) by searching up from the Java root
+    -- This ensures we always get the 'grabbler' folder, not 'backend'.
+    local root_markers = { '.git' }
+    local root_dir = require('lspconfig.util').root_pattern(unpack(root_markers))(java_project_dir)
+
     local home = os.getenv("HOME")
     local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
-    local lombok_path = home .. "/.local/share/lombok/lombok.jar"
+    local lombok_path_new = home .. "/.local/share/lombok/lombok.jar"
+    
+    -- Create a consistent workspace name based on the true root directory
     local workspace_dir = vim.fn.stdpath('cache') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
-
 
     local config = {
       cmd = {
@@ -37,21 +99,21 @@ vim.api.nvim_create_autocmd("FileType", {
         '-Declipse.product=org.eclipse.jdt.ls.core.product',
         '-Dlog.level=ALL',
         '-noverify',
-        '-Xmx1G',
+        '-Xms1G', -- Set initial memory
+        '-Xmx2G', -- Set max memory
         '-javaagent:' .. lombok_path_new,
         '-jar', vim.fn.glob(jdtls_pkg .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
         '-configuration', jdtls_pkg .. '/config_mac',
-        '-data', vim.fn.stdpath('cache') .. '/jdtls-workspace' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
+        -- Use the consistent workspace directory
+        '-data', workspace_dir
       },
-      --root_dir = require('jdtls.setup').find_root({'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}) or jdtls.find_root({'.git'}),
-      --root_dir = util.root_pattern('mvnw', 'gradlew', 'pom.xml', 'build.gradle') or util.root_pattern('.git'), 
-      root_dir = root_dir,
+      root_dir = root_dir, -- Always use the true root directory
       settings = {
         java = {},
       },
     }
 
-    print('[JDTLS] Attaching with root:', root_dir)
+    print('[JDTLS] Attaching with consistent root:', root_dir)
 
     jdtls.start_or_attach(config)
     -- ✅ Format on save just for Java
@@ -63,6 +125,9 @@ vim.api.nvim_create_autocmd("FileType", {
     })
   end
 })
+
+
+
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
@@ -77,12 +142,12 @@ vim.opt.signcolumn = 'yes'
 lsp.nvim_workspace()
 -- Add cmp_nvim_lsp capabilities settings to lspconfig
 -- This should be executed before you configure any language server
-local lspconfig_defaults = require('lspconfig').util.default_config
-lspconfig_defaults.capabilities = vim.tbl_deep_extend(
-    'force',
-    lspconfig_defaults.capabilities,
-    require('cmp_nvim_lsp').default_capabilities()
-)
+--local lspconfig_defaults = require('lspconfig').util.default_config
+--lspconfig_defaults.capabilities = vim.tbl_deep_extend(
+--    'force',
+--    lspconfig_defaults.capabilities,
+--    require('cmp_nvim_lsp').default_capabilities()
+--)
 
 -- This is where you enable features that only work
 -- if there is a language server active in the file
