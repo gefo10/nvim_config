@@ -15,9 +15,15 @@ local function get_jdtls_config()
   local jdtls = require('jdtls')
   
   -- Find root directory starting from current buffer's file
-  local root_markers = {'.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}
+  local root_markers = {'mvnw', 'gradlew', 'pom.xml', 'build.gradle', '.git'}
   local root_dir = require('jdtls.setup').find_root(root_markers)
 
+  local capabilities = require('cmp_nvim_lsp').default_capabilities()
+  -- Add file-watching setting to the default table
+  -- This merges your setting without destroying the others.
+  capabilities.workspace = capabilities.workspace or {}
+  capabilities.workspace.didChangeWatchedFiles = capabilities.workspace.didChangeWatchedFiles or {}
+  capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = true
     -- Fallback to current working directory if no root found
   if not root_dir then
     root_dir = vim.fn.getcwd()
@@ -25,7 +31,14 @@ local function get_jdtls_config()
   -- Determine OS
   local home = os.getenv('HOME')
   local workspace_dir = home .. '/.cache/nvim/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
-  
+
+  local launchers = vim.fn.glob(jdtls_pkg .. '/plugins/org.eclipse.equinox.launcher_*.jar', false, true)
+  if #launchers == 0 then
+      vim.notify('[jdtls] Error: No Equinox launcher jar found in ' .. jdtls_pkg .. '/plugins/. jdtls will not start.', vim.log.levels.ERROR)
+      return {} -- Return an empty config to prevent start
+  end
+    
+  local launcher_jar = launchers[1]
   -- Ensure workspace directory exists
   vim.fn.mkdir(workspace_dir, 'p')
   
@@ -51,6 +64,22 @@ local function get_jdtls_config()
    
     settings = {
       java = {
+        -- *** CLIENT-SIDE FILE WATCHER EXCLUDE ***
+        -- This tells NEOVIM what to ignore. This is CRITICAL.
+        files = {
+            watcherExclude = {
+                "**/.git/**",
+                "**/.svn/**",
+                "**/.hg/**",
+                "**/.DS_Store/**",
+                "**/node_modules/**",
+                "**/bin/**",
+                "**/target/**",
+                "**/build/**",
+                "**/.gradle/**",
+                "**/.metadata/**"
+            },
+        },
         autobuild = {
           enabled = true
         },
@@ -59,15 +88,15 @@ local function get_jdtls_config()
                 "lib/**/*.jar",
             },
             -- filters out directories to be excluded from watching
-            resourceFilters = {
-                "node_modules",
-                ".metadata",
-                "bin",
-                "build",
-                "target",
-                ".gradle",
-                ".git"
-            },
+            --resourceFilters = {
+            --    "node_modules",
+            --    ".metadata",
+            --    "bin",
+            --    "build",
+            --    "target",
+            --    ".gradle",
+            --    ".git"
+            --},
         },
         eclipse = {
           downloadSources = true,
@@ -90,8 +119,8 @@ local function get_jdtls_config()
         format = {
           enabled = true,
           settings = {
-            url = vim.fn.stdpath "config" .. "/lang-servers/intellij-java-google-style.xml",
-            profile = "GoogleStyle",
+            --url = vim.fn.stdpath "config" .. "/lang-servers/intellij-java-google-style.xml",
+            --profile = "GoogleStyle",
           },
         },
         signatureHelp = { 
@@ -153,22 +182,7 @@ local function get_jdtls_config()
     },
     
     -- Capabilities with disabled dynamic file watching
-    capabilities = {
-      workspace = {
-        didChangeWatchedFiles = {
-          dynamicRegistration = true, -- Disable to prevent ENOENT errors
-        },
-        configuration = true,
-        workspaceFolders = true,
-      },
-      textDocument = {
-        completion = {
-          completionItem = {
-            snippetSupport = true,
-          },
-        },
-      },
-    },
+    capabilities = capabilities,
     
     flags = {
       allow_incremental_sync = true,
