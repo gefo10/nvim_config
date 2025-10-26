@@ -5,6 +5,18 @@ local lspconfig = require('lspconfig')
 local configs = require('lspconfig.configs')
 
 require('mason').setup({})
+require('mason-lspconfig').setup({
+    ensure_installed = {
+        'rust_analyzer',
+        'pyright',
+        'clangd',
+        -- add other servers you want
+    },
+    handlers = {
+        lsp.default_setup,
+        jdtls = lsp.noop, -- Skip jdtls since you configure it manually
+    },
+})
 local home = os.getenv("HOME")
 local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
 local lombok_jar = jdtls_pkg .. '/lombok.jar'
@@ -401,11 +413,11 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 -- LSP Setup (excluding jdtls as it's manually configured)
-lsp.setup({ 
-    servers = {
-        jdtls = false -- Manual setup above
-    }
-})
+--lsp.setup({ 
+--    servers = {
+--        jdtls = false -- Manual setup above
+--    }
+--})
 
 -- Diagnostic Configuration
 vim.diagnostic.config({
