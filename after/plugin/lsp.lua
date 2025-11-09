@@ -5,6 +5,12 @@ local lspconfig = require('lspconfig')
 local configs = require('lspconfig.configs')
 
 require('mason').setup({})
+-- ✅ SET DEFAULT CAPABILITIES FIRST (before mason-lspconfig)
+lsp.set_server_config({
+    capabilities = {
+        offsetEncoding = { "utf-16", "utf-8" }
+    }
+})
 require('mason-lspconfig').setup({
     ensure_installed = {
         'rust_analyzer',
@@ -17,6 +23,7 @@ require('mason-lspconfig').setup({
         jdtls = lsp.noop, -- Skip jdtls since you configure it manually
     },
 })
+
 local home = os.getenv("HOME")
 local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
 local lombok_jar = jdtls_pkg .. '/lombok.jar'
@@ -383,6 +390,7 @@ lsp.on_attach(function(client, bufnr)
     vim.keymap.set("i", "<leader>vsh", function() vim.lsp.buf.signature_help() end, opts)
 end)
 
+-- etc...
 -- Format on Save Configuration
 lsp.format_on_save({
     format_opts = {
