@@ -16,13 +16,60 @@ require('mason-lspconfig').setup({
         'rust_analyzer',
         'pyright',
         'clangd',
+        'lua_ls',
         -- add other servers you want
     },
     handlers = {
         lsp.default_setup,
         jdtls = lsp.noop, -- Skip jdtls since you configure it manually
+        lua_ls = function()
+            local lua_opts = lsp.nvim_lua_ls()
+            require('lspconfig').lua_ls.setup(lua_opts)
+        end,
     },
 })
+
+-- Helper to find Java 17/21 for the JDTLS launcher (Fixes Exit Code 13)
+local function get_jdtls_java_command()
+    local home = os.getenv("HOME")
+    local java_candidates = home .. "/.sdkman/candidates/java/"
+    local priorities = { home .. "/.sdkman/candidates/java/21*", home .. "/.sdkman/candidates/java/17*" }
+
+    for _, pattern in ipairs(priorities) do
+        local paths = vim.fn.glob(pattern, true, true)
+        if #paths > 0 then return paths[1] .. "/bin/java" end
+    end
+    return "java" -- Fallback
+end
+
+-- Helper to find all installed SDKMAN runtimes (e.g., 8, 11, 17, 21)
+local function get_sdkman_runtimes()
+    local home = os.getenv("HOME")
+    local java_base = home .. "/.sdkman/candidates/java"
+    local runtimes = {}
+
+    if vim.loop.fs_stat(java_base) then
+        local handle = vim.loop.fs_scandir(java_base)
+        if handle then
+            while true do
+                local name, type = vim.loop.fs_scandir_next(handle)
+                if not name then break end
+                if (type == "directory" or type == "link") and name ~= "current" then
+                    local version_number = name:match("^(%d+)")
+                    if version_number then
+                        table.insert(runtimes, {
+                            name = "JavaSE-" .. (version_number == "8" and "1.8" or version_number),
+                            path = java_base .. "/" .. name
+                        })
+                    end
+                end
+            end
+        end
+    end
+    return runtimes
+end
+
+
 
 local home = os.getenv("HOME")
 local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
@@ -31,212 +78,224 @@ local lombok_path_new = home .. "/.local/share/lombok/lombok.jar"
 
 -- JDTLS Configuration
 local function get_jdtls_config()
-  local jdtls = require('jdtls')
-  
-  -- Find root directory starting from current buffer's file
-  local root_markers = {'mvnw', 'gradlew', 'pom.xml', 'build.gradle', '.git'}
-  local root_dir = require('jdtls.setup').find_root(root_markers)
+    local jdtls = require('jdtls')
 
-  local capabilities = require('cmp_nvim_lsp').default_capabilities()
-  -- Add file-watching setting to the default table
-  -- This merges your setting without destroying the others.
-  capabilities.workspace = capabilities.workspace or {}
-  capabilities.workspace.didChangeWatchedFiles = capabilities.workspace.didChangeWatchedFiles or {}
-  capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = true
+    -- Find root directory starting from current buffer's file
+    local root_markers = { 'mvnw', 'gradlew', 'pom.xml', 'build.gradle', '.git' }
+    local root_dir = require('jdtls.setup').find_root(root_markers)
+
+    local capabilities = require('cmp_nvim_lsp').default_capabilities()
+    -- Add file-watching setting to the default table
+    -- This merges your setting without destroying the others.
+    capabilities.workspace = capabilities.workspace or {}
+    capabilities.workspace.didChangeWatchedFiles = capabilities.workspace.didChangeWatchedFiles or {}
+    capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = true
     -- Fallback to current working directory if no root found
-  if not root_dir then
-    root_dir = vim.fn.getcwd()
-  end
-  -- Determine OS
-  local home = os.getenv('HOME')
-  local workspace_dir = home .. '/.cache/nvim/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+    if not root_dir then
+        root_dir = vim.fn.getcwd()
+    end
+    -- Determine OS
+    local home = os.getenv('HOME')
+    local workspace_dir = home .. '/.cache/nvim/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
 
-  local launchers = vim.fn.glob(jdtls_pkg .. '/plugins/org.eclipse.equinox.launcher_*.jar', false, true)
-  if #launchers == 0 then
-      vim.notify('[jdtls] Error: No Equinox launcher jar found in ' .. jdtls_pkg .. '/plugins/. jdtls will not start.', vim.log.levels.ERROR)
-      return {} -- Return an empty config to prevent start
-  end
-    
-  local launcher_jar = launchers[1]
-  -- Ensure workspace directory exists
-  vim.fn.mkdir(workspace_dir, 'p')
-  
-  local config = {
-    cmd = {
-      'java',
-      '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-      '-Dosgi.bundles.defaultStartLevel=4',
-      '-Declipse.product=org.eclipse.jdt.ls.core.product',
-      '-Dlog.protocol=true',
-      '-Dlog.level=ALL',
-      '-Xmx2g', -- Increased from 1g
-      '--add-modules=ALL-SYSTEM',
-      '--add-opens', 'java.base/java.util=ALL-UNNAMED',
-      '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-      '-javaagent:' .. lombok_path_new,
-      '-jar', vim.fn.glob(home .. '/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
-      '-configuration', home .. '/.local/share/nvim/mason/packages/jdtls/config_mac',
-      '-data', workspace_dir,
-    },
-    
-    root_dir = root_dir,
-   
-    settings = {
-      java = {
-        -- *** CLIENT-SIDE FILE WATCHER EXCLUDE ***
-        -- This tells NEOVIM what to ignore. This is CRITICAL.
-        files = {
-            watcherExclude = {
-                "**/.git/**",
-                "**/.svn/**",
-                "**/.hg/**",
-                "**/.DS_Store/**",
-                "**/node_modules/**",
-                "**/bin/**",
-                "**/target/**",
-                "**/build/**",
-                "**/.gradle/**",
-                "**/.metadata/**"
-            },
-        },
-        autobuild = {
-          enabled = true
-        },
-        project = {
-            referencedLibraries = {
-                "lib/**/*.jar",
-            },
-            -- filters out directories to be excluded from watching
-            --resourceFilters = {
-            --    "node_modules",
-            --    ".metadata",
-            --    "bin",
-            --    "build",
-            --    "target",
-            --    ".gradle",
-            --    ".git"
-            --},
-        },
-        eclipse = {
-          downloadSources = true,
-        },
-        configuration = {
-          updateBuildConfiguration = "automatic", -- Changed from interactive
-        },
-        maven = {
-          downloadSources = true,
-        },
-        implementationsCodeLens = {
-          enabled = true,
-        },
-        referencesCodeLens = {
-          enabled = true,
-        },
-        references = {
-          includeDecompiledSources = true,
-        },
-        format = {
-          enabled = true,
-          settings = {
-            --url = vim.fn.stdpath "config" .. "/lang-servers/intellij-java-google-style.xml",
-            --profile = "GoogleStyle",
-          },
-        },
-        signatureHelp = { 
-          enabled = true 
-        },
-        completion = {
-          enabled = true,
-          guessMethodArguments = true,
-          favoriteStaticMembers = {
-            "org.hamcrest.MatcherAssert.assertThat",
-            "org.hamcrest.Matchers.*",
-            "org.hamcrest.CoreMatchers.*",
-            "org.junit.jupiter.api.Assertions.*",
-            "java.util.Objects.requireNonNull",
-            "java.util.Objects.requireNonNullElse",
-            "org.mockito.Mockito.*",
-          },
-          importOrder = {
-            "java",
-            "javax",
-            "com",
-            "org"
-          },
-        },
-        sources = {
-          organizeImports = {
-            starThreshold = 9999,
-            staticStarThreshold = 9999,
-          },
-        },
-        codeGeneration = {
-          toString = {
-            template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
-          },
-          useBlocks = true,
-        },
-        -- ADDED: File import exclusions
-        import = {
-          gradle = {
-            enabled = true,
-            wrapper = {
-              enabled = true,
-            },
-          },
-          exclusions = {
-            "**/node_modules/**",
-            "**/.metadata/**",
-            "**/archetype-resources/**",
-            "**/META-INF/maven/**",
-            "**/.git/**",
-            "**/build/**",
-            "**/target/**",
-            "**/.gradle/**",
-            "**/bin/**",
-            "**/uploads/**",
-          },
-        },
-      },
-    },
-    
-    -- Capabilities with disabled dynamic file watching
-    capabilities = capabilities,
-    
-    flags = {
-      allow_incremental_sync = true,
-      debounce_text_changes = 150, -- Added debounce
-    },
-    
-    init_options = {
-      bundles = {},
-      extendedClientCapabilities = require('jdtls').extendedClientCapabilities,
-    },
-    
-    on_attach = function(client, bufnr)
-        -- Disable semantic tokens to avoid conflict with treesitter
-        client.server_capabilities.semanticTokensProvider = nil
+    local launchers = vim.fn.glob(jdtls_pkg .. '/plugins/org.eclipse.equinox.launcher_*.jar', false, true)
+    if #launchers == 0 then
+        vim.notify('[jdtls] Error: No Equinox launcher jar found in ' .. jdtls_pkg .. '/plugins/. jdtls will not start.',
+            vim.log.levels.ERROR)
+        return {} -- Return an empty config to prevent start
+    end
 
-    end,
-  }
-  
-  return config
+    local launcher_jar = launchers[1]
+    -- Ensure workspace directory exists
+    vim.fn.mkdir(workspace_dir, 'p')
+
+
+    -- Add a more reliable lombok path check/fallback here
+    local lombok_path_current = lombok_jar    -- Use the Mason path defined outside
+    if vim.fn.filereadable(lombok_path_current) == 0 then
+        lombok_path_current = lombok_path_new -- Fallback to your old user path if Mason's is missing
+    end
+
+    local config = {
+        cmd = {
+            --'java',
+            get_jdtls_java_command(),
+            '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+            '-Dosgi.bundles.defaultStartLevel=4',
+            '-Declipse.product=org.eclipse.jdt.ls.core.product',
+            '-Dlog.protocol=true',
+            '-Dlog.level=ALL',
+            '-Xmx2g', -- Increased from 1g
+            '--add-modules=ALL-SYSTEM',
+            '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+            '-javaagent:' .. lombok_path_new,
+            '-jar', launcher_jar,                         --vim.fn.glob(home ..
+            --'/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
+            '-configuration', jdtls_pkg .. '/config_mac', --home .. '/.local/share/nvim/mason/packages/jdtls/config_mac',
+            '-data', workspace_dir,
+        },
+
+        root_dir = root_dir,
+
+        settings = {
+            java = {
+                -- *** CLIENT-SIDE FILE WATCHER EXCLUDE ***
+                -- This tells NEOVIM what to ignore. This is CRITICAL.
+                files = {
+                    watcherExclude = {
+                        "**/.git/**",
+                        "**/.svn/**",
+                        "**/.hg/**",
+                        "**/.DS_Store/**",
+                        "**/node_modules/**",
+                        "**/bin/**",
+                        "**/target/**",
+                        "**/build/**",
+                        "**/.gradle/**",
+                        "**/.metadata/**"
+                    },
+                },
+                autobuild = {
+                    enabled = true
+                },
+                project = {
+                    referencedLibraries = {
+                        "lib/**/*.jar",
+                    },
+                    -- filters out directories to be excluded from watching
+                    --resourceFilters = {
+                    --    "node_modules",
+                    --    ".metadata",
+                    --    "bin",
+                    --    "build",
+                    --    "target",
+                    --    ".gradle",
+                    --    ".git"
+                    --},
+                },
+                eclipse = {
+                    downloadSources = true,
+                },
+                configuration = {
+                    updateBuildConfiguration = "automatic", -- Changed from interactive
+                    runtimes = get_sdkman_runtimes(),
+                },
+                maven = {
+                    downloadSources = true,
+                },
+                implementationsCodeLens = {
+                    enabled = true,
+                },
+                referencesCodeLens = {
+                    enabled = true,
+                },
+                references = {
+                    includeDecompiledSources = true,
+                },
+                format = {
+                    enabled = true,
+                    settings = {
+                        --url = vim.fn.stdpath "config" .. "/lang-servers/intellij-java-google-style.xml",
+                        --profile = "GoogleStyle",
+                    },
+                },
+                signatureHelp = {
+                    enabled = true
+                },
+                completion = {
+                    enabled = true,
+                    guessMethodArguments = true,
+                    favoriteStaticMembers = {
+                        "org.hamcrest.MatcherAssert.assertThat",
+                        "org.hamcrest.Matchers.*",
+                        "org.hamcrest.CoreMatchers.*",
+                        "org.junit.jupiter.api.Assertions.*",
+                        "java.util.Objects.requireNonNull",
+                        "java.util.Objects.requireNonNullElse",
+                        "org.mockito.Mockito.*",
+                    },
+                    importOrder = {
+                        "java",
+                        "javax",
+                        "com",
+                        "org"
+                    },
+                },
+                sources = {
+                    organizeImports = {
+                        starThreshold = 9999,
+                        staticStarThreshold = 9999,
+                    },
+                },
+                codeGeneration = {
+                    toString = {
+                        template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+                    },
+                    useBlocks = true,
+                },
+                -- ADDED: File import exclusions
+                import = {
+                    gradle = {
+                        enabled = true,
+                        wrapper = {
+                            enabled = true,
+                        },
+                    },
+                    exclusions = {
+                        "**/node_modules/**",
+                        "**/.metadata/**",
+                        "**/archetype-resources/**",
+                        "**/META-INF/maven/**",
+                        "**/.git/**",
+                        "**/build/**",
+                        "**/target/**",
+                        "**/.gradle/**",
+                        "**/bin/**",
+                        "**/uploads/**",
+                    },
+                },
+            },
+        },
+
+        -- Capabilities with disabled dynamic file watching
+        capabilities = capabilities,
+
+        flags = {
+            allow_incremental_sync = true,
+            debounce_text_changes = 150, -- Added debounce
+        },
+
+        init_options = {
+            bundles = {},
+            extendedClientCapabilities = require('jdtls').extendedClientCapabilities,
+        },
+        on_attach = function(client, bufnr)
+            -- Disable semantic tokens to avoid conflict with treesitter
+            client.server_capabilities.semanticTokensProvider = nil
+        end,
+    }
+
+    return config
 end
 
 -- Auto-start JDTLS for Java files
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "java",
-  callback = function()
-    local config = get_jdtls_config()
-    require('jdtls').start_or_attach(config)
-  end,
+    pattern = "java",
+    callback = function()
+        local config = get_jdtls_config()
+
+        if config.cmd then
+            require('jdtls').start_or_attach(config)
+        end
+    end,
 })
 
 -- Reserve a space in the gutter
 vim.opt.signcolumn = 'yes'
 
 -- Fix Undefined global 'vim'
-lsp.nvim_workspace()
+--lsp.nvim_workspace()
 
 -- Autocmd to automatically update the project configuration when you save a build file
 local jdtls_project_management = vim.api.nvim_create_augroup('jdtls_project_management', { clear = true })
@@ -244,35 +303,35 @@ local jdtls_project_management = vim.api.nvim_create_augroup('jdtls_project_mana
 
 -- Auto-refresh project on build file changes
 vim.api.nvim_create_autocmd('BufWritePost', {
-  group = jdtls_project_management,
-  pattern = { 'build.gradle', 'pom.xml', 'settings.gradle', '*.gradle.kts' },
-  callback = function(args)
-    local clients = vim.lsp.get_active_clients({ bufnr = args.buf })
+    group = jdtls_project_management,
+    pattern = { 'build.gradle', 'pom.xml', 'settings.gradle', '*.gradle.kts' },
+    callback = function(args)
+        local clients = vim.lsp.get_active_clients({ bufnr = args.buf })
 
-    for _, client in ipairs(clients) do
-      if client.name == 'jdtls' then
-        vim.notify('[jdtls] Build file changed. Refreshing project...', vim.log.levels.INFO)
+        for _, client in ipairs(clients) do
+            if client.name == 'jdtls' then
+                vim.notify('[jdtls] Build file changed. Refreshing project...', vim.log.levels.INFO)
 
-        vim.lsp.buf_request(
-          args.buf,
-          'workspace/executeCommand',
-          {
-            command = 'java.project.import',
-            arguments = { vim.uri_from_bufnr(args.buf) },
-          },
-          function(err, result)
-            if err then
-              vim.notify('[jdtls] Project import failed: ' .. tostring(err.message), vim.log.levels.ERROR)
-            else
-              vim.notify('[jdtls] Project refresh successful!', vim.log.levels.INFO)
+                vim.lsp.buf_request(
+                    args.buf,
+                    'workspace/executeCommand',
+                    {
+                        command = 'java.project.import',
+                        arguments = { vim.uri_from_bufnr(args.buf) },
+                    },
+                    function(err, result)
+                        if err then
+                            vim.notify('[jdtls] Project import failed: ' .. tostring(err.message), vim.log.levels.ERROR)
+                        else
+                            vim.notify('[jdtls] Project refresh successful!', vim.log.levels.INFO)
+                        end
+                    end
+                )
+                break
             end
-          end
-        )
-        break
-      end
-    end
-  end,
-  desc = 'JDTLS: Refresh project on build file save.',
+        end
+    end,
+    desc = 'JDTLS: Refresh project on build file save.',
 })
 
 -- Update source paths when Java files are saved
@@ -421,7 +480,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 -- LSP Setup (excluding jdtls as it's manually configured)
---lsp.setup({ 
+--lsp.setup({
 --    servers = {
 --        jdtls = false -- Manual setup above
 --    }
@@ -451,11 +510,11 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 --
 --local function get_jdtls_config()
 --  local jdtls = require('jdtls')
---  
+--
 --  -- Determine OS
 --  local home = os.getenv('HOME')
 --  local workspace_dir = home .. '/.cache/nvim/jdtls-workspace/' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
---  
+--
 --  -- Ensure workspace directory exists
 --  vim.fn.mkdir(workspace_dir, 'p')
 --
@@ -478,7 +537,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 --    },
 --
 --    root_dir = require('jdtls.setup').find_root({'.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle'}),
---    
+--
 --    settings = {
 --      java = {
 --      },
@@ -514,11 +573,11 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 --        useBlocks = true,
 --      },
 --    },
---    
+--
 --    flags = {
 --      allow_incremental_sync = true,
 --    },
---    
+--
 --    init_options = {
 --      bundles = {},
 --    },
@@ -539,11 +598,11 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 --          end, 100)
 --        end,
 --      })
---      
+--
 --      -- Your other on_attach stuff
 --    end,
 --  }
---  
+--
 --  return config
 --end
 --
@@ -579,7 +638,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----    local home = os.getenv("HOME")
 ----    local jdtls_pkg = vim.fn.stdpath('data') .. '/mason/packages/jdtls'
 ----    local lombok_path_new = home .. "/.local/share/lombok/lombok.jar"
-----    
+----
 ----    -- Create a consistent workspace name based on the true root directory
 ----    local workspace_dir = vim.fn.stdpath('cache') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
 ----
@@ -599,7 +658,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----        '-data', workspace_dir
 ----      },
 ----      root_dir = root_dir,
-----      
+----
 ----      -- ✅ ADD THIS: Proper initialization options
 ----      init_options = {
 ----        bundles = {},
@@ -607,7 +666,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----          progressReportProvider = false,
 ----        },
 ----      },
-----      
+----
 ----      settings = {
 ----        java = {
 ----          -- ✅ ADD THIS: Enable automatic source actions
@@ -647,7 +706,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----          },
 ----        },
 ----      },
-----      
+----
 ----      -- ✅ ADD THIS: Proper capabilities including workspace folders
 ----      capabilities = vim.tbl_deep_extend(
 ----        'force',
@@ -662,7 +721,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----          },
 ----        }
 ----      ),
-----      
+----
 ----      -- ✅ ADD THIS: Flags for better file watching
 ----      flags = {
 ----        allow_incremental_sync = true,
@@ -675,7 +734,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----    print('[JDTLS] Workspace dir:', workspace_dir)
 ----
 ----    jdtls.start_or_attach(config)
-----    
+----
 ----    -- Format on save just for Java
 ----    vim.api.nvim_create_autocmd("BufWritePre", {
 ----      buffer = vim.api.nvim_get_current_buf(),
@@ -683,7 +742,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 ----        vim.lsp.buf.format({ async = false, timeout_ms = 5000 })
 ----      end,
 ----    })
-----    
+----
 ----    -- ✅ ADD THIS: Force a workspace refresh after attaching
 ----    vim.defer_fn(function()
 ----      vim.lsp.buf.execute_command({
@@ -803,7 +862,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 --            end, { buffer = event.buf, desc = 'JDTLS: Import Project' })
 --
 --             vim.keymap.set('n', '<leader>jr', function()
---                 vim.lsp.buf.execute_command({ 
+--                 vim.lsp.buf.execute_command({
 --                     command = 'java.project.updateSourcePaths',
 --                     arguments = { vim.uri_from_bufnr(0) }
 --                 })
@@ -951,7 +1010,7 @@ vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagno
 --local lsp_configurations = require('lspconfig.configs')
 --
 ---- Set up all other LSPs with lsp-zero
---lsp.setup({ 
+--lsp.setup({
 --    servers = {
 --    -- Prevent lsp-zero from starting jdtls
 --    -- Your manual setup will handle it
