@@ -72,14 +72,14 @@ saga.setup({
 local keymap = vim.keymap.set
 
 -- Definition & References
-keymap('n', 'gd', '<cmd>Lspsaga goto_definition<CR>', { desc = 'Go to definition' })
-keymap('n', 'gp', '<cmd>Lspsaga peek_definition<CR>', { desc = 'Peek definition' })
+--keymap('n', 'gd', '<cmd>Lspsaga goto_definition<CR>', { desc = 'Go to definition' })
+--keymap('n', 'gp', '<cmd>Lspsaga peek_definition<CR>', { desc = 'Peek definition' })
 
-keymap('n', 'gi', '<cmd>Lspsaga goto_implementation<CR>', { desc = 'Go to implementation' })
-keymap('n', 'gI', '<cmd>Lspsaga peek_implementation<CR>', { desc = 'Peek implementation' })
+--keymap('n', 'gi', '<cmd>Lspsaga goto_implementation<CR>', { desc = 'Go to implementation' })
+--keymap('n', 'gI', '<cmd>Lspsaga peek_implementation<CR>', { desc = 'Peek implementation' })
 
-keymap('n', 'gt', '<cmd>Lspsaga goto_type_definition<CR>', { desc = 'Go to type definition' })
-keymap('n', 'gr', '<cmd>Lspsaga finder<CR>', { desc = 'Find references' })
+--keymap('n', 'gt', '<cmd>Lspsaga goto_type_definition<CR>', { desc = 'Go to type definition' })
+--keymap('n', 'gr', '<cmd>Lspsaga finder<CR>', { desc = 'Find references' })
 
 -- Hover & Documentation
 keymap('n', 'K', '<cmd>Lspsaga hover_doc<CR>', { desc = 'Hover documentation' })
