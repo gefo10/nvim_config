@@ -131,7 +131,7 @@ _G.packer_plugins = {
     url = "https://github.com/rafamadriz/friendly-snippets"
   },
   ["glance.nvim"] = {
-    config = { "\27LJ\2\n»\5\0\0\n\0(\0:6\0\0\0'\2\1\0B\0\2\0029\1\2\0009\2\3\0005\4\4\0005\5\5\0=\5\6\0045\5\a\0=\5\b\0045\5\t\0=\5\n\0045\5$\0005\6\f\0009\a\v\1=\a\r\0069\a\14\1=\a\15\0069\a\v\1=\a\16\0069\a\14\1=\a\17\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\22\1=\a\23\0069\a\24\1=\a\25\0069\a\26\1=\a\27\0069\a\28\1=\a\29\0069\a\30\1'\t\31\0B\a\2\2=\a \0069\a!\1=\a\"\0069\a!\1=\a#\6=\6\b\0055\6%\0009\a!\1=\a&\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\30\1'\t\b\0B\a\2\2=\a \6=\6\31\5=\5'\4B\2\2\1K\0\1\0\rmappings\6Q\1\0\4\14<leader>l\0\n<Tab>\0\f<S-Tab>\0\6Q\0\1\0\2\fpreview\0\tlist\0\n<Esc>\6q\nclose\14<leader>l\fpreview\14enter_win\6t\rjump_tab\6s\15jump_split\6v\16jump_vsplit\t<CR>\tjump\f<S-Tab>\22previous_location\n<Tab>\18next_location\t<Up>\v<Down>\6k\rprevious\6j\1\0\r\6v\0\6k\0\t<Up>\0\t<CR>\0\14<leader>l\0\v<Down>\0\6t\0\6q\0\6s\0\n<Tab>\0\f<S-Tab>\0\n<Esc>\0\6j\0\tnext\ntheme\1\0\2\tmode\tauto\venable\2\tlist\1\0\2\rposition\nright\nwidth\4®\5Έ½Τώ\3\vborder\1\0\1\venable\2\1\0\5\vheight\3\18\tlist\0\vborder\0\ntheme\0\rmappings\0\nsetup\factions\vglance\frequire\0" },
+    config = { "\27LJ\2\n»\5\0\0\n\0(\0:6\0\0\0'\2\1\0B\0\2\0029\1\2\0009\2\3\0005\4\4\0005\5\5\0=\5\6\0045\5\a\0=\5\b\0045\5\t\0=\5\n\0045\5$\0005\6\f\0009\a\v\1=\a\r\0069\a\14\1=\a\15\0069\a\v\1=\a\16\0069\a\14\1=\a\17\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\22\1=\a\23\0069\a\24\1=\a\25\0069\a\26\1=\a\27\0069\a\28\1=\a\29\0069\a\30\1'\t\31\0B\a\2\2=\a \0069\a!\1=\a\"\0069\a!\1=\a#\6=\6\b\0055\6%\0009\a!\1=\a&\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\30\1'\t\b\0B\a\2\2=\a \6=\6\31\5=\5'\4B\2\2\1K\0\1\0\rmappings\6Q\1\0\4\6Q\0\n<Tab>\0\f<S-Tab>\0\14<leader>l\0\1\0\2\fpreview\0\tlist\0\n<Esc>\6q\nclose\14<leader>l\fpreview\14enter_win\6t\rjump_tab\6s\15jump_split\6v\16jump_vsplit\t<CR>\tjump\f<S-Tab>\22previous_location\n<Tab>\18next_location\t<Up>\v<Down>\6k\rprevious\6j\1\0\r\t<CR>\0\6k\0\6s\0\t<Up>\0\v<Down>\0\6j\0\6t\0\6q\0\n<Esc>\0\n<Tab>\0\f<S-Tab>\0\14<leader>l\0\6v\0\tnext\ntheme\1\0\2\tmode\tauto\venable\2\tlist\1\0\2\rposition\nright\nwidth\4®\5Έ½Τώ\3\vborder\1\0\1\venable\2\1\0\5\ntheme\0\rmappings\0\tlist\0\vborder\0\vheight\3\18\nsetup\factions\vglance\frequire\0" },
     loaded = true,
     path = "/Users/gefo/.local/share/nvim/site/pack/packer/start/glance.nvim",
     url = "https://github.com/dnlhc/glance.nvim"
@@ -261,6 +261,12 @@ _G.packer_plugins = {
     path = "/Users/gefo/.local/share/nvim/site/pack/packer/start/vim-fugitive",
     url = "https://github.com/tpope/vim-fugitive"
   },
+  ["which-key.nvim"] = {
+    config = { "\27LJ\2\nW\0\0\4\0\4\0\a6\0\0\0'\2\1\0B\0\2\0029\1\2\0005\3\3\0B\1\2\1K\0\1\0\1\0\2\14show_help\2\rtriggers\tauto\nsetup\14which-key\frequire\0" },
+    loaded = true,
+    path = "/Users/gefo/.local/share/nvim/site/pack/packer/start/which-key.nvim",
+    url = "https://github.com/folke/which-key.nvim"
+  },
   ["zen-mode.nvim"] = {
     loaded = true,
     path = "/Users/gefo/.local/share/nvim/site/pack/packer/start/zen-mode.nvim",
@@ -269,14 +275,18 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
--- Config for: glance.nvim
-time([[Config for glance.nvim]], true)
-try_loadstring("\27LJ\2\n»\5\0\0\n\0(\0:6\0\0\0'\2\1\0B\0\2\0029\1\2\0009\2\3\0005\4\4\0005\5\5\0=\5\6\0045\5\a\0=\5\b\0045\5\t\0=\5\n\0045\5$\0005\6\f\0009\a\v\1=\a\r\0069\a\14\1=\a\15\0069\a\v\1=\a\16\0069\a\14\1=\a\17\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\22\1=\a\23\0069\a\24\1=\a\25\0069\a\26\1=\a\27\0069\a\28\1=\a\29\0069\a\30\1'\t\31\0B\a\2\2=\a \0069\a!\1=\a\"\0069\a!\1=\a#\6=\6\b\0055\6%\0009\a!\1=\a&\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\30\1'\t\b\0B\a\2\2=\a \6=\6\31\5=\5'\4B\2\2\1K\0\1\0\rmappings\6Q\1\0\4\14<leader>l\0\n<Tab>\0\f<S-Tab>\0\6Q\0\1\0\2\fpreview\0\tlist\0\n<Esc>\6q\nclose\14<leader>l\fpreview\14enter_win\6t\rjump_tab\6s\15jump_split\6v\16jump_vsplit\t<CR>\tjump\f<S-Tab>\22previous_location\n<Tab>\18next_location\t<Up>\v<Down>\6k\rprevious\6j\1\0\r\6v\0\6k\0\t<Up>\0\t<CR>\0\14<leader>l\0\v<Down>\0\6t\0\6q\0\6s\0\n<Tab>\0\f<S-Tab>\0\n<Esc>\0\6j\0\tnext\ntheme\1\0\2\tmode\tauto\venable\2\tlist\1\0\2\rposition\nright\nwidth\4®\5Έ½Τώ\3\vborder\1\0\1\venable\2\1\0\5\vheight\3\18\tlist\0\vborder\0\ntheme\0\rmappings\0\nsetup\factions\vglance\frequire\0", "config", "glance.nvim")
-time([[Config for glance.nvim]], false)
 -- Config for: Comment.nvim
 time([[Config for Comment.nvim]], true)
 try_loadstring("\27LJ\2\n5\0\0\3\0\3\0\0066\0\0\0'\2\1\0B\0\2\0029\0\2\0B\0\1\1K\0\1\0\nsetup\fComment\frequire\0", "config", "Comment.nvim")
 time([[Config for Comment.nvim]], false)
+-- Config for: which-key.nvim
+time([[Config for which-key.nvim]], true)
+try_loadstring("\27LJ\2\nW\0\0\4\0\4\0\a6\0\0\0'\2\1\0B\0\2\0029\1\2\0005\3\3\0B\1\2\1K\0\1\0\1\0\2\14show_help\2\rtriggers\tauto\nsetup\14which-key\frequire\0", "config", "which-key.nvim")
+time([[Config for which-key.nvim]], false)
+-- Config for: glance.nvim
+time([[Config for glance.nvim]], true)
+try_loadstring("\27LJ\2\n»\5\0\0\n\0(\0:6\0\0\0'\2\1\0B\0\2\0029\1\2\0009\2\3\0005\4\4\0005\5\5\0=\5\6\0045\5\a\0=\5\b\0045\5\t\0=\5\n\0045\5$\0005\6\f\0009\a\v\1=\a\r\0069\a\14\1=\a\15\0069\a\v\1=\a\16\0069\a\14\1=\a\17\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\22\1=\a\23\0069\a\24\1=\a\25\0069\a\26\1=\a\27\0069\a\28\1=\a\29\0069\a\30\1'\t\31\0B\a\2\2=\a \0069\a!\1=\a\"\0069\a!\1=\a#\6=\6\b\0055\6%\0009\a!\1=\a&\0069\a\18\1=\a\19\0069\a\20\1=\a\21\0069\a\30\1'\t\b\0B\a\2\2=\a \6=\6\31\5=\5'\4B\2\2\1K\0\1\0\rmappings\6Q\1\0\4\6Q\0\n<Tab>\0\f<S-Tab>\0\14<leader>l\0\1\0\2\fpreview\0\tlist\0\n<Esc>\6q\nclose\14<leader>l\fpreview\14enter_win\6t\rjump_tab\6s\15jump_split\6v\16jump_vsplit\t<CR>\tjump\f<S-Tab>\22previous_location\n<Tab>\18next_location\t<Up>\v<Down>\6k\rprevious\6j\1\0\r\t<CR>\0\6k\0\6s\0\t<Up>\0\v<Down>\0\6j\0\6t\0\6q\0\n<Esc>\0\n<Tab>\0\f<S-Tab>\0\14<leader>l\0\6v\0\tnext\ntheme\1\0\2\tmode\tauto\venable\2\tlist\1\0\2\rposition\nright\nwidth\4®\5Έ½Τώ\3\vborder\1\0\1\venable\2\1\0\5\ntheme\0\rmappings\0\tlist\0\vborder\0\vheight\3\18\nsetup\factions\vglance\frequire\0", "config", "glance.nvim")
+time([[Config for glance.nvim]], false)
 -- Config for: trouble.nvim
 time([[Config for trouble.nvim]], true)
 try_loadstring("\27LJ\2\nC\0\0\3\0\4\0\a6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\1K\0\1\0\1\0\1\nicons\1\nsetup\ftrouble\frequire\0", "config", "trouble.nvim")

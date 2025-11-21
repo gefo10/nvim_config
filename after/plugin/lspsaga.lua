@@ -81,6 +81,8 @@ local keymap = vim.keymap.set
 --keymap('n', 'gt', '<cmd>Lspsaga goto_type_definition<CR>', { desc = 'Go to type definition' })
 --keymap('n', 'gr', '<cmd>Lspsaga finder<CR>', { desc = 'Find references' })
 
+
+-- TODO: switch using telescope maybe
 -- Hover & Documentation
 keymap('n', 'K', '<cmd>Lspsaga hover_doc<CR>', { desc = 'Hover documentation' })
 keymap('n', '<leader>K', '<cmd>Lspsaga hover_doc ++keep<CR>', { desc = 'Hover documentation (keep open)' })

@@ -60,6 +60,9 @@ return require('packer').startup(function(use)
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
 
+
+    use "folke/which-key.nvim"
+
     use({
         'rose-pine/neovim',
         as = 'rose-pine',

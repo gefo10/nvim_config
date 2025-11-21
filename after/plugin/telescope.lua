@@ -13,7 +13,7 @@ local keymap = vim.keymap.set
 keymap('n', '<leader>.', function() builtin.find_files({ cwd = vim.fn.expand('%:p:h') }) end)
 
 
-keymap('n', 'gd', '<cmd>Telescope lsp_definitions<CR>', { desc = 'Go to definition' })
-keymap('n', 'gi', '<cmd>Telescope lsp_implementations<CR>', { desc = 'Go to implementations' })
-keymap('n', 'gr', '<cmd>Telescope lsp_references<CR>', { desc = 'Find references' })
-keymap('n', 'gt', '<cmd>Telescope lsp_type_definitions<CR>', { desc = 'Go to type definition' })
+keymap('n', '<leader>gd', '<cmd>Telescope lsp_definitions<CR>', { desc = 'Go to definition' })
+keymap('n', '<leader>gi', '<cmd>Telescope lsp_implementations<CR>', { desc = 'Go to implementations' })
+keymap('n', '<leader>gr', '<cmd>Telescope lsp_references<CR>', { desc = 'Find references' })
+keymap('n', '<leader>gt', '<cmd>Telescope lsp_type_definitions<CR>', { desc = 'Go to type definition' })
