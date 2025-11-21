@@ -21,10 +21,10 @@ end)
 vim.keymap.set("x", "<leader>p", [["_dP]])
 
 -- next greatest remap ever : asbjornHaland
-vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
+vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])
 
-vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
+vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 -- This is going to get me cancelled
 vim.keymap.set("i", "<C-c>", "<Esc>")
@@ -56,3 +56,9 @@ vim.keymap.set("i", "<C-k>", "<Up>")
 -- format code
 vim.keymap.set('n', '<leader>fc', ':lua vim.lsp.buf.format({ async = true })<CR>', { noremap = true, silent = true })
 
+
+
+
+vim.keymap.set('n', '<leader>pb', '<C-^>', { desc = 'Toggle previous buffer' })
+vim.keymap.set('n', '<leader>jb', '<C-o>', { desc = 'Jump back' })
+vim.keymap.set('n', '<leader>jf', '<C-i>', { desc = 'Jump forward' })

@@ -45,34 +45,8 @@ wk.setup({
     triggers = "auto",
 })
 
--- Register keybindings
-wk.register({
-    -- LSP goto mappings
-    g = {
-        name = "goto",
-        d = { "<cmd>Telescope lsp_definitions<CR>", "Go to definition" },
-        D = { "<cmd>Telescope lsp_type_definitions<CR>", "Go to type definition" },
-        i = { "<cmd>Glance implementations<CR>", "Peek implementations" },
-        I = { "<cmd>Telescope lsp_implementations<CR>", "Jump to implementations" },
-        p = { "<cmd>Glance definitions<CR>", "Peek definition" },
-        P = { "<cmd>Glance type_definitions<CR>", "Peek type definition" },
-        r = { "<cmd>Telescope lsp_references<CR>", "Find references" },
-        R = { "<cmd>Glance references<CR>", "Peek references" },
-    },
-})
-
 -- Leader mappings
 wk.register({
-    f = {
-        name = "find",
-        f = { "<cmd>Telescope find_files<CR>", "Find files" },
-        g = { "<cmd>Telescope live_grep<CR>", "Live grep" },
-        b = { "<cmd>Telescope buffers<CR>", "Buffers" },
-        h = { "<cmd>Telescope help_tags<CR>", "Help tags" },
-        s = { "<cmd>Telescope lsp_document_symbols<CR>", "Document symbols" },
-        S = { "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", "Workspace symbols" },
-        r = { "<cmd>Telescope oldfiles<CR>", "Recent files" },
-    },
     c = {
         name = "code",
         a = { vim.lsp.buf.code_action, "Code action" },
@@ -88,7 +62,6 @@ wk.register({
         c = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.clean.workspace' })<CR>", "Clean workspace" },
     },
     d = { vim.diagnostic.open_float, "Line diagnostics" },
-    D = { "<cmd>Telescope diagnostics<CR>", "All diagnostics" },
     q = { vim.diagnostic.setloclist, "Diagnostics to loclist" },
 }, { prefix = "<leader>" })
 
@@ -116,12 +89,30 @@ wk.register({
 })
 
 
+-- Register with which-key
 wk.register({
     p = {
-        name = "peek",
-        d = "Peek definition",
-        I = "Peek implementations",
-        R = "Peek references",
-        T = "Peek type definitions",
+        name = "buffer",
+        b = "Toggle previous buffer",
     },
-})
+    j = {
+        name = "jump",
+        b = "Jump back",
+        f = "Jump forward",
+    },
+}, { prefix = "<leader>" })
+
+
+---------- ORIGINAL MAPPINGS ----------
+--wk.register({
+--    ["<C-o>"] = "Jump to older position",
+--    ["<C-i>"] = "Jump to newer position",
+--    ["g;"] = "Go to previous change",
+--    ["g,"] = "Go to next change",
+--    ["'"] = {
+--        name = "marks",
+--        a = "Jump to mark a",
+--        b = "Jump to mark b",
+--        -- etc
+--    },
+--})
