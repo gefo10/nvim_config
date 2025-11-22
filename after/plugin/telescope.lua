@@ -25,7 +25,7 @@ keymap('n', '<leader>gi', '<cmd>Telescope lsp_implementations<CR>', { desc = 'Go
 keymap('n', '<leader>gr', '<cmd>Telescope lsp_references<CR>', { desc = 'Find references' })
 keymap('n', '<leader>gt', '<cmd>Telescope lsp_type_definitions<CR>', { desc = 'Go to type definition' })
 keymap('n', '<leader>fj', '<cmd>Telescope jumplist<CR>', { desc = 'Jump list' })
-
+--keymap('n', '<leader>ca', '<cmd>Telescope code_action<CR>', { noremap = true, silent = true, desc = 'Code actions' })
 
 -- Register keybindings
 wk.register({

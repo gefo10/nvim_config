@@ -88,8 +88,8 @@ keymap('n', 'K', '<cmd>Lspsaga hover_doc<CR>', { desc = 'Hover documentation' })
 keymap('n', '<leader>K', '<cmd>Lspsaga hover_doc ++keep<CR>', { desc = 'Hover documentation (keep open)' })
 
 -- Code Actions & Refactoring
-keymap('n', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { desc = 'Code action' })
-keymap('v', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { desc = 'Code action (visual)' })
+keymap('n', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { noremap = true, silent = true, desc = 'Code action' })
+--keymap('v', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { desc = 'Code action (visual)' })
 keymap('n', '<leader>rn', '<cmd>Lspsaga rename<CR>', { desc = 'Rename' })
 keymap('n', '<leader>rN', '<cmd>Lspsaga rename ++project<CR>', { desc = 'Rename (project-wide)' })
 
