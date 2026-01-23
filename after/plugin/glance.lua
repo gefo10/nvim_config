@@ -10,18 +10,15 @@ local keymap = vim.keymap.set
 
 -- Peek with Glance (stays in current file)
 keymap('n', '<leader>pd', '<cmd>Glance definitions<CR>', { desc = 'Peek definition' })
-keymap('n', '<leader>pI', '<cmd>Glance implementations<CR>', { desc = 'Peek implementations' })
-keymap('n', '<leader>pR', '<cmd>Glance references<CR>', { desc = 'Peek references' })
-keymap('n', '<leader>pT', '<cmd>Glance type_definitions<CR>', { desc = 'Peek type definitions' })
+keymap('n', '<leader>pi', '<cmd>Glance implementations<CR>', { desc = 'Peek implementations' })
+keymap('n', '<leader>pr', '<cmd>Glance references<CR>', { desc = 'Peek references' })
+keymap('n', '<leader>pt', '<cmd>Glance type_definitions<CR>', { desc = 'Peek type definitions' })
 --
 -- Register keybindings
 
 wk.register({
-    p = {
-        name = "peek",
-        d = "Peek definition",
-        I = "Peek implementations",
-        R = "Peek references",
-        T = "Peek type definitions",
-    },
-}, { prefix = "<leader>" })
+    { "<leader>pd", desc = "Peek definitions" },
+    { "<leader>pi", desc = "Peek implementations" },
+    { "<leader>pr", desc = "Peek references" },
+    { "<leader>pt", desc = "Peek type definitions" },
+})

@@ -42,24 +42,47 @@ comment.setup({
 })
 
 
-wk.register({
-    ["/"] = "Toggle comment",
-    ["?"] = "Toggle block comment",
-}, { prefix = "<leader>" })
+--wk.register({
+--    ["/"] = "Toggle comment",
+--    ["?"] = "Toggle block comment",
+--}, { prefix = "<leader>" })
+--
+--wk.register({
+--    g = {
+--        name = "goto/comment",
+--        c = {
+--            name = "comment",
+--            c = "Toggle line comment",
+--            O = "Add comment above",
+--            o = "Add comment below",
+--            A = "Add comment at EOL",
+--        },
+--        b = {
+--            name = "block comment",
+--            c = "Toggle block comment",
+--        },
+--    },
+--})
+--
 
+-- Comment toggles
 wk.register({
-    g = {
-        name = "goto/comment",
-        c = {
-            name = "comment",
-            c = "Toggle line comment",
-            O = "Add comment above",
-            o = "Add comment below",
-            A = "Add comment at EOL",
-        },
-        b = {
-            name = "block comment",
-            c = "Toggle block comment",
-        },
-    },
+    { "<leader>/", desc = "Toggle comment" },
+    { "<leader>?", desc = "Toggle block comment" },
+})
+
+-- goto/comment mappings
+wk.register({
+    { "g",   group = "goto/comment" },
+
+    -- comment group
+    { "gc",  group = "comment" },
+    { "gcc", desc = "Toggle line comment" },
+    { "gcO", desc = "Add comment above" },
+    { "gco", desc = "Add comment below" },
+    { "gcA", desc = "Add comment at EOL" },
+
+    -- block comment group
+    { "gb",  group = "block comment" },
+    { "gbc", desc = "Toggle block comment" },
 })

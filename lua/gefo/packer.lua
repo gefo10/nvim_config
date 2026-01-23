@@ -53,6 +53,10 @@ return require('packer').startup(function(use)
             })
         end
     }
+    use {
+        "ray-x/lsp_signature.nvim",
+    }
+
 
     use {
         'nvim-telescope/telescope.nvim', tag = '0.1.3',

@@ -1,11 +1,23 @@
 local lsp = require("lsp-zero")
 
+vim.o.updatetime = 200
+
 -- Prevent mason-lspconfig and lspconfig from auto-setup
 local lspconfig = require('lspconfig')
 local configs = require('lspconfig.configs')
-
+--
+-- ✅ SAFE SETUP: Try to load it, but don't crash if it's missing
+local status_ok, lsp_signature = pcall(require, "lsp_signature")
+if status_ok then
+    lsp_signature.setup({
+        bind = true,
+        handler_opts = {
+            border = "rounded"
+        },
+        hint_enable = true,
+    })
+end
 require('mason').setup({})
--- ✅ SET DEFAULT CAPABILITIES FIRST (before mason-lspconfig)
 lsp.set_server_config({
     capabilities = {
         offsetEncoding = { "utf-16", "utf-8" }
@@ -17,11 +29,34 @@ require('mason-lspconfig').setup({
         'pyright',
         'clangd',
         'lua_ls',
+        'ts_ls',
         -- add other servers you want
     },
     handlers = {
         lsp.default_setup,
         jdtls = lsp.noop, -- Skip jdtls since you configure it manually
+        tsserver = function()
+            require('lspconfig').tsserver.setup({
+                filetypes = {
+                    "typescript",
+                    "typescriptreact",
+                    "javascript",
+                    "javascriptreact",
+                },
+            })
+        end,
+        ts_ls = function()
+            require('lspconfig').ts_ls.setup({
+                init_options = {
+                    preferences = {
+                        disableSuggestions = true,
+                        includeCompletionsForModuleExports = true,
+                        includeCompletionsForImportStatements = true,
+                    },
+                },
+                filetypes = { "typescript", "typescriptreact", "typescript.tsx", "javascript", "javascriptreact", "javascript.jsx" },
+            })
+        end,
         lua_ls = function()
             local lua_opts = lsp.nvim_lua_ls()
             require('lspconfig').lua_ls.setup(lua_opts)
@@ -361,6 +396,13 @@ vim.api.nvim_create_autocmd('LspAttach', {
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if not client then return end
 
+        if client.server_capabilities.signatureHelpProvider then
+            local status_ok, signature_plugin = pcall(require, "lsp_signature")
+            if status_ok then
+                signature_plugin.on_attach({}, event.buf)
+            end
+        end
+
         -- Disable semantic highlights (to avoid conflict with treesitter)
         client.server_capabilities.semanticTokensProvider = nil
 
@@ -409,6 +451,8 @@ local cmp_select = { behavior = cmp.SelectBehavior.Select }
 cmp.setup({
     sources = {
         { name = 'nvim_lsp' },
+        { name = 'path' },
+        { name = 'buffer' },
     },
     mapping = cmp.mapping.preset.insert({
         ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
@@ -493,6 +537,9 @@ vim.diagnostic.config({
 
 -- Additional Keymaps
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, { desc = "Show diagnostic in float" })
+
+
+
 --local lsp = require("lsp-zero")
 --
 ---- Prevent mason-lspconfig and lspconfig from auto-setup

@@ -27,30 +27,57 @@ keymap('n', '<leader>gt', '<cmd>Telescope lsp_type_definitions<CR>', { desc = 'G
 keymap('n', '<leader>fj', '<cmd>Telescope jumplist<CR>', { desc = 'Jump list' })
 --keymap('n', '<leader>ca', '<cmd>Telescope code_action<CR>', { noremap = true, silent = true, desc = 'Code actions' })
 
--- Register keybindings
-wk.register({
-    -- LSP goto mappings
-    g = {
-        name = "goto",
-        d = { "<cmd>Telescope lsp_definitions<CR>", "Go to definition" },
-        D = { "<cmd>Telescope lsp_type_definitions<CR>", "Go to type definition" },
-        I = { "<cmd>Telescope lsp_implementations<CR>", "Jump to implementations" },
-        r = { "<cmd>Telescope lsp_references<CR>", "Find references" },
-    },
-}, { prefix = "<leader>" })
+--- OLD interface
+---- Register keybindings
+--wk.register({
+--    -- LSP goto mappings
+--    g = {
+--        name = "goto",
+--        d = { "<cmd>Telescope lsp_definitions<CR>", "Go to definition" },
+--        D = { "<cmd>Telescope lsp_type_definitions<CR>", "Go to type definition" },
+--        I = { "<cmd>Telescope lsp_implementations<CR>", "Jump to implementations" },
+--        r = { "<cmd>Telescope lsp_references<CR>", "Find references" },
+--    },
+--}, { prefix = "<leader>" })
+--
+---- Leader mappings
+--wk.register({
+--    f = {
+--        name = "find",
+--        f = { "<cmd>Telescope find_files<CR>", "Find files" },
+--        g = { "<cmd>Telescope live_grep<CR>", "Live grep" },
+--        b = { "<cmd>Telescope buffers<CR>", "Buffers" },
+--        h = { "<cmd>Telescope help_tags<CR>", "Help tags" },
+--        s = { "<cmd>Telescope lsp_document_symbols<CR>", "Document symbols" },
+--        S = { "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", "Workspace symbols" },
+--        r = { "<cmd>Telescope oldfiles<CR>", "Recent files" },
+--        j = "Jump list",
+--    },
+--    D = { "<cmd>Telescope diagnostics<CR>", "All diagnostics" },
+--}, { prefix = "<leader>" })
 
--- Leader mappings
+
+-- Goto (LSP) mappings
 wk.register({
-    f = {
-        name = "find",
-        f = { "<cmd>Telescope find_files<CR>", "Find files" },
-        g = { "<cmd>Telescope live_grep<CR>", "Live grep" },
-        b = { "<cmd>Telescope buffers<CR>", "Buffers" },
-        h = { "<cmd>Telescope help_tags<CR>", "Help tags" },
-        s = { "<cmd>Telescope lsp_document_symbols<CR>", "Document symbols" },
-        S = { "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", "Workspace symbols" },
-        r = { "<cmd>Telescope oldfiles<CR>", "Recent files" },
-        j = "Jump list",
-    },
-    D = { "<cmd>Telescope diagnostics<CR>", "All diagnostics" },
-}, { prefix = "<leader>" })
+    { "<leader>g",  group = "goto" },
+    { "<leader>gd", desc = "Go to definition" },
+    { "<leader>gD", desc = "Go to type definition" },
+    { "<leader>gI", desc = "Jump to implementations" },
+    { "<leader>gr", desc = "Find references" },
+})
+
+-- Leader "find" mappings
+wk.register({
+    { "<leader>f",  group = "find" },
+
+    { "<leader>ff", desc = "Find files" },
+    { "<leader>fg", desc = "Live grep" },
+    { "<leader>fb", desc = "Buffers" },
+    { "<leader>fh", desc = "Help tags" },
+    { "<leader>fs", desc = "Document symbols" },
+    { "<leader>fS", desc = "Workspace symbols" },
+    { "<leader>fr", desc = "Recent files" },
+    { "<leader>fj", desc = "Jump list" },
+
+    { "<leader>D",  desc = "All diagnostics" },
+})

@@ -42,65 +42,65 @@ wk.setup({
         align = "left",
     },
     show_help = true,
-    triggers = "auto",
+    triggers = { "<auto>" },
 })
 
 -- Leader mappings
-wk.register({
-    c = {
-        name = "code",
-        a = { vim.lsp.buf.code_action, "Code action" },
-    },
-    r = {
-        name = "refactor",
-        n = { vim.lsp.buf.rename, "Rename" },
-    },
-    j = {
-        name = "java",
-        i = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.project.import' })<CR>", "Import project" },
-        r = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.project.import' })<CR>", "Refresh project" },
-        c = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.clean.workspace' })<CR>", "Clean workspace" },
-    },
-    d = { vim.diagnostic.open_float, "Line diagnostics" },
-    q = { vim.diagnostic.setloclist, "Diagnostics to loclist" },
-}, { prefix = "<leader>" })
-
--- Diagnostic navigation
-wk.register({
-    ["[d"] = { vim.diagnostic.goto_prev, "Previous diagnostic" },
-    ["]d"] = { vim.diagnostic.goto_next, "Next diagnostic" },
-    ["[e"] = {
-        function()
-            vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })
-        end,
-        "Previous error"
-    },
-    ["]e"] = {
-        function()
-            vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })
-        end,
-        "Next error"
-    },
-})
-
--- Single key mappings
-wk.register({
-    K = { vim.lsp.buf.hover, "Hover documentation" },
-})
-
-
--- Register with which-key
-wk.register({
-    p = {
-        name = "buffer",
-        b = "Toggle previous buffer",
-    },
-    j = {
-        name = "jump",
-        b = "Jump back",
-        f = "Jump forward",
-    },
-}, { prefix = "<leader>" })
+--wk.register({
+--    c = {
+--        name = "code",
+--        a = { vim.lsp.buf.code_action, "Code action" },
+--    },
+--    r = {
+--        name = "refactor",
+--        n = { vim.lsp.buf.rename, "Rename" },
+--    },
+--    j = {
+--        name = "java",
+--        i = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.project.import' })<CR>", "Import project" },
+--        r = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.project.import' })<CR>", "Refresh project" },
+--        c = { "<cmd>lua vim.lsp.buf.execute_command({ command = 'java.clean.workspace' })<CR>", "Clean workspace" },
+--    },
+--    d = { vim.diagnostic.open_float, "Line diagnostics" },
+--    q = { vim.diagnostic.setloclist, "Diagnostics to loclist" },
+--}, { prefix = "<leader>" })
+--
+---- Diagnostic navigation
+--wk.register({
+--    ["[d"] = { vim.diagnostic.goto_prev, "Previous diagnostic" },
+--    ["]d"] = { vim.diagnostic.goto_next, "Next diagnostic" },
+--    ["[e"] = {
+--        function()
+--            vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })
+--        end,
+--        "Previous error"
+--    },
+--    ["]e"] = {
+--        function()
+--            vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })
+--        end,
+--        "Next error"
+--    },
+--})
+--
+---- Single key mappings
+--wk.register({
+--    K = { vim.lsp.buf.hover, "Hover documentation" },
+--})
+--
+--
+---- Register with which-key
+--wk.register({
+--    p = {
+--        name = "buffer",
+--        b = "Toggle previous buffer",
+--    },
+--    j = {
+--        name = "jump",
+--        b = "Jump back",
+--        f = "Jump forward",
+--    },
+--}, { prefix = "<leader>" })
 
 
 ---------- ORIGINAL MAPPINGS ----------
@@ -116,3 +116,69 @@ wk.register({
 --        -- etc
 --    },
 --})
+
+
+-- CODE / REFACTOR / JAVA / DIAGNOSTICS
+wk.register({
+    -- Groups
+    { "<leader>c",  group = "code" },
+    { "<leader>r",  group = "refactor" },
+    { "<leader>j",  group = "java" },
+
+    -- Code actions
+    { "<leader>ca", desc = "Code action" },
+
+    -- Refactor
+    { "<leader>rn", desc = "Rename" },
+
+    -- Java workspace commands
+    {
+        "<leader>ji",
+        desc = "Import project"
+    },
+    {
+        "<leader>jr",
+        desc = "Refresh project"
+    },
+    {
+        "<leader>jc",
+        desc = "Clean workspace"
+    },
+
+    -- Diagnostics
+    { "<leader>d", desc = "Line diagnostics" },
+    { "<leader>q", desc = "Diagnostics to loclist" },
+})
+
+-- DIAGNOSTIC NAVIGATION
+wk.register({
+    { "[d", desc = "Previous diagnostic" },
+    { "]d", desc = "Next diagnostic" },
+
+    {
+        "[e",
+        desc = "Previous error"
+    },
+
+    {
+        "]e",
+        desc = "Next error"
+    },
+})
+
+-- HOVER DOC
+wk.register({
+    { "K", desc = "Hover documentation" },
+})
+
+-- BUFFER + JUMP GROUPS
+wk.register({
+    -- Buffer group
+    { "<leader>p",  group = "buffer" },
+    { "<leader>pb", desc = "Toggle previous buffer" },
+
+    -- Jump group
+    { "<leader>j",  group = "jump" },
+    { "<leader>jb", desc = "Jump back" },
+    { "<leader>jf", desc = "Jump forward" },
+})
