@@ -101,6 +101,22 @@ return require('packer').startup(function(use)
         run = function()
             local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
             ts_update()
+
+            require('nvim-treesitter.config').setup({
+                auto_install = true,
+                highlight = {
+                    enable = true,
+                },
+                --incremental_selection = {
+                --    enable = true,
+                --    keymaps = {
+                --        init_selection = "gnn",
+                --        node_incremental = "grn",
+                --        scope_incremental = "grc",
+                --        node_decremental = "grm",
+                --    }
+                --}
+            })
         end, }
     use("nvim-treesitter/playground")
     use("theprimeagen/harpoon")

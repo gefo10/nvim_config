@@ -30,6 +30,7 @@ require('mason-lspconfig').setup({
         'clangd',
         'lua_ls',
         'ts_ls',
+        'gopls',
         -- add other servers you want
     },
     handlers = {
@@ -61,6 +62,23 @@ require('mason-lspconfig').setup({
             local lua_opts = lsp.nvim_lua_ls()
             require('lspconfig').lua_ls.setup(lua_opts)
         end,
+        gopls = function()
+            require('lspconfig').gopls.setup({
+                settings = {
+                    gopls = {
+                        analyses = {
+                            unusedparams = true,
+                            shadow = true,
+                        },
+                        staticcheck = true,
+                        gofumpt = true,
+                        usePlaceholders = true,
+                        completeUnimported = true,
+                    },
+                },
+            })
+        end,
+
     },
 })
 
@@ -268,6 +286,9 @@ local function get_jdtls_config()
                         template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
                     },
                     useBlocks = true,
+                },
+                compiler = {
+                    lombokSupport = true,
                 },
                 -- ADDED: File import exclusions
                 import = {
@@ -505,6 +526,7 @@ lsp.format_on_save({
         ['rust_analyzer'] = { 'rust' },
         ['pyright'] = { 'python' },
         ['clangd'] = { 'c', 'cpp' },
+        ['gopls'] = { 'go' },
     }
 })
 
