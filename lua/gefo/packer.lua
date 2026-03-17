@@ -118,7 +118,6 @@ return require('packer').startup(function(use)
                 --}
             })
         end, }
-    use("nvim-treesitter/playground")
     use("theprimeagen/harpoon")
     use("theprimeagen/refactoring.nvim")
     use("mbbill/undotree")
