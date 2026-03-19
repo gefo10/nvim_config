@@ -171,6 +171,17 @@ wk.register({
     { "K", desc = "Hover documentation" },
 })
 
+-- DATABASE (dadbod)
+wk.register({
+    { "<leader>d",  group = "database" },
+    { "<leader>dc", desc = "Connect to DB" },
+    { "<leader>db", desc = "Toggle DB UI" },
+    { "<leader>dq", desc = "Find query by filename" },
+    { "<leader>dQ", desc = "Find query by content" },
+    { "<leader>dt", desc = "Pick table → SELECT query" },
+    { "<leader>S",  desc = "Execute SQL" },
+})
+
 -- BUFFER + JUMP GROUPS
 wk.register({
     -- Buffer group

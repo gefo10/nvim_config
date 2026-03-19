@@ -162,11 +162,13 @@ return require('packer').startup(function(use)
     use("github/copilot.vim")
     use("eandrju/cellular-automaton.nvim")
     use("laytan/cloak.nvim")
-    -- install without yarn or npm
-    use({
-        "iamcco/markdown-preview.nvim",
-        run = function() vim.fn["mkdp#util#install"]() end,
-    })
+    use {
+        'OXY2DEV/markview.nvim',
+        requires = {
+            { 'nvim-treesitter/nvim-treesitter' },
+            { 'nvim-tree/nvim-web-devicons' },
+        }
+    }
 
     -- These optional plugins should be loaded directly because of a bug in Packer lazy loading
     -- TODO: configure late for TABS - disable for now
@@ -178,6 +180,9 @@ return require('packer').startup(function(use)
         requires = { 'nvim-tree/nvim-web-devicons', opt = true }
     }
     use("EdenEast/nightfox.nvim")
+    use 'tpope/vim-dadbod'
+    use 'kristijanhusak/vim-dadbod-ui'
+    use 'kristijanhusak/vim-dadbod-completion'
     -- -- Copilot Chat
     -- use {
     --   'CopilotC-Nvim/CopilotChat.nvim',
